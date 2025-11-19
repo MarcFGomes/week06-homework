@@ -1,4 +1,7 @@
-//
+//My API key
+const  apiKey = "b85ce65762cbc1b5c430f94bad59fafc";
+
+//Parent where to append the buttons
 let fatherButton = document.getElementById("left-side-buttons");
 
 
@@ -13,7 +16,7 @@ function saveState() {
 
 //Function for Pre-selected cities
 const handleSubmit = (city) => {
-    console.log(`The city is ${city}`);
+    //console.log(`The city is ${city}`);
 }
 
 //function for search button
@@ -28,6 +31,9 @@ const handleSearch = () =>{
         addSearch(city);
         render();
         saveState();
+        fetchCoordinate(city).then(coords => {
+        fetchWeather(coords.lat, coords.lon);
+        });
         document.getElementById('city').value=""
     }
 
@@ -52,14 +58,10 @@ const render = () => {
 
     fatherButton.innerHTML = "";
     
-    //citiesSearchedReverse.forEach((city, index)=> {
-    //console.log(`User at index ${index}:`);
-    //});
-    console.log(`length ${citiesSearched.length}:`);
     for(let i=citiesSearched.length-1; i>=0; i--){
         let cityButton = createButton(citiesSearched[i]);
 
-        console.log(`User ${citiesSearched[i]}:`);
+        //console.log(`User ${citiesSearched[i]}:`);
 
         fatherButton.append(cityButton);
 
@@ -79,12 +81,12 @@ const addSearch = (search) => {
 
     if(citiesSearched.length<8){
         citiesSearched.push(search);
-        console.log(`my array ${citiesSearched}`)
+        //console.log(`my array ${citiesSearched}`)
     }
     else {
         citiesSearched.shift();
         citiesSearched.push(search);
-        console.log(`my array is ${citiesSearched}`)
+        //console.log(`my array is ${citiesSearched}`)
     }
     
     return;
@@ -110,3 +112,45 @@ const normalize = (str) => {
 }
 
 render();
+
+//Connect with the API and fetch the coordinates of the searched city
+const fetchCoordinate = (cityName) => {
+let requestUrl ="https://api.openweathermap.org/geo/1.0/"
+let queryParams = "direct?q=" + cityName + "&limit=1&appid=";
+
+requestUrl = requestUrl + queryParams + apiKey;
+console.log(requestUrl);
+
+fetch(requestUrl)
+  .then(function (response) {
+    // Convert the response into JSON format
+    return response.json();
+  })
+
+  .then(function (data) {
+    if (!data.length) {
+        alert("Write an actual city dumbass");
+        return; 
+    }
+
+    // Inspect the API response
+    //console.log("Coordinates:", data);
+    let lat = data[0].lat;
+    let lon = data[0].lon;
+
+    return lat, lon ;
+  })
+
+   .catch(function (error) {
+    console.error("Error fetching:", error);
+  });
+}
+
+//Connect with the API and fetch the weather forecast
+const fetchWeather = (latitude, longitude) => {
+    let requestUrlWeather ="api.openweathermap.org/data/2.5/forecast?{API key}"
+    let queryParamsWeather =`lat=${latitude}&lon=${longitude}&units=imperial&appid=`
+
+    requestUrlWeather = requestUrlWeather + queryParamsWeather + apiKey;
+    console.log(requestUrlWeather);
+}
